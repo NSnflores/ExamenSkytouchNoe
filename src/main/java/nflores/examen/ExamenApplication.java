@@ -1,25 +1,30 @@
 package nflores.examen;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
+import org.springframework.amqp.core.Queue;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
-import static java.awt.SystemColor.control;
-
 @SpringBootApplication
 public class ExamenApplication {
-
 	@Bean
-	public CommandLineRunner examen() {
-		return new ExamenRunner();
+	public Queue hello() {
+		return new Queue("hello");
 	}
 
-	public static boolean IsRunning = true;
+	@Profile("receiver")
+	@Bean
+	public ExamenReceiver receiver() {
+		return new ExamenReceiver();
+	}
+
+	@Profile("sender")
+	@Bean
+	public CommandLineRunner sender() {
+		return new ExamenSender();
+	}
 
 	public static void main(String[] args) throws Exception {
 		SpringApplication.run(ExamenApplication.class, args);

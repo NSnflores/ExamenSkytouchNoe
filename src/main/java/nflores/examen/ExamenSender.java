@@ -4,18 +4,11 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.ConfigurableApplicationContext;
 
-import javax.annotation.PostConstruct;
-import java.util.Scanner;
-
-
-public class ExamenSender {
+public class ExamenSender implements CommandLineRunner{
     @Value("${examen.client.times_to_send:1}")
     private int times;
 
@@ -25,15 +18,18 @@ public class ExamenSender {
     @Autowired
     private Queue queue;
 
-    @PostConstruct
-    public void send() throws Exception{
+    @Autowired
+    private ConfigurableApplicationContext ctx;
 
+    @Override
+    public void run(String... arg0) throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
         for(int i = 0; i < times; i++) {
-            ObjectMapper objectMapper = new ObjectMapper();
-            String jsonPerson = objectMapper.writeValueAsString(new Person("noe", 11));
-            this.template.convertAndSend(queue.getName(), jsonPerson);
+            Person falsePerson = new Person("Noe", 11);
+            String jsonPerson = objectMapper.writeValueAsString(falsePerson);
+            template.convertAndSend(queue.getName(), jsonPerson);
             System.out.println("Sent: " + jsonPerson);
         }
-        ExamenApplication.IsRunning = false;
+        ctx.close();
     }
 }
